@@ -4,7 +4,6 @@
   "private": true,
   "scripts": {
     "admin:fix": "node scripts/fix-admin-login.js",
-    "admin:hash": "node -e \"const bcrypt = require('bcryptjs'); bcrypt.hash('212221*', 10).then(hash => console.log('Hash:', hash));\"",
     "admin:setup": "node scripts/setup-admin.js",
     "build": "next build",
     "deploy:setup": "node scripts/deploy-setup.js",
@@ -12,7 +11,8 @@
     "dev": "next dev",
     "lint": "next lint",
     "start": "next start",
-    "supabase:verify": "node scripts/verify-supabase.js"
+    "supabase:verify": "node scripts/verify-supabase.js",
+    "test:supabase": "node scripts/test-supabase-simple.js"
   },
   "dependencies": {
     "@radix-ui/react-tabs": "latest",
@@ -27,6 +27,7 @@
     "path": "latest",
     "react": "^18",
     "react-dom": "^18",
+    "readline": "latest",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7"
   },
