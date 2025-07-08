@@ -1,0 +1,49 @@
+{
+  "name": "addiagnostico-pro",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "admin:fix": "node scripts/fix-admin-login.js",
+    "admin:setup": "node scripts/setup-admin.js",
+    "build": "next build",
+    "deploy:setup": "node scripts/deploy-setup.js",
+    "deploy:verify": "node scripts/verify-deployment.js",
+    "dev": "next dev",
+    "lint": "next lint",
+    "start": "next start",
+    "supabase:verify": "node scripts/verify-supabase.js",
+    "test:supabase": "node scripts/test-supabase-simple.js"
+  },
+  "dependencies": {
+    "@radix-ui/react-tabs": "latest",
+    "@supabase/supabase-js": "latest",
+    "bcryptjs": "latest",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "fs": "latest",
+    "https": "latest",
+    "lucide-react": "^0.454.0",
+    "next": "14.2.16",
+    "path": "latest",
+    "react": "^18",
+    "react-dom": "^18",
+    "readline": "latest",
+    "tailwind-merge": "^2.5.5",
+    "tailwindcss-animate": "^1.0.7"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^22",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "autoprefixer": "^10.4.16",
+    "eslint": "^8.54.0",
+    "eslint-config-next": "14.0.4",
+    "postcss": "^8.5",
+    "tailwindcss": "^3.3.6",
+    "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
