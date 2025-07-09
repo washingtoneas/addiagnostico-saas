@@ -47,7 +47,8 @@ export default function HomePage() {
             estão dando <span className="text-red-600">prejuízo</span>?
           </h1>
           <p className="text-xl text-slate-600 mb-8 max-w-3xl mx-auto">
-            <span className="font-semibold text-blue-600">Você está a um clique</span> de encontrar os erros e gargalos da sua campanha, chega de perder dinheiro e aprenda a lucrar de verdade entendendo os dados da sua campanha. Diagnóstico + relatório completo com indicação de melhoria.
+            <span className="font-semibold text-blue-600">Descubra em segundos</span> onde você está errando e como
+            melhorar. Diagnóstico gratuito + relatório completo por apenas R$ 19,90.
           </p>
           <Link href="/diagnostico">
             <Button

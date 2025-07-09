@@ -6,8 +6,6 @@ export async function POST(request: NextRequest) {
   try {
     const { email, password } = await request.json()
 
-    console.log("🔐 Tentativa de login:", { email, hasPassword: !!password })
-
     // Validações básicas
     if (!email || !password) {
       return NextResponse.json(
@@ -19,34 +17,26 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const emailLower = email.toLowerCase()
-    const isAdmin = emailLower === "washington.eas@gmail.com"
-
-    console.log("👤 Verificando usuário:", { email: emailLower, isAdmin })
+    // Verificar se é o admin
+    const isAdmin = email.toLowerCase() === "washington.eas@gmail.com"
 
     // Buscar usuário no banco
-    const { data: user, error } = await supabaseAdmin.from("users").select("*").eq("email", emailLower).single()
+    const { data: user, error } = await supabaseAdmin
+      .from("users")
+      .select("*")
+      .eq("email", email.toLowerCase())
+      .single()
 
-    console.log("🔍 Resultado da busca:", {
-      found: !!user,
-      hasPassword: !!user?.password_hash,
-      hasAccess: user?.has_access,
-      error: error?.message,
-    })
-
-    // Se não encontrou o usuário
     if (error || !user) {
-      // Se for admin, criar automaticamente
-      if (isAdmin) {
-        console.log("🛠️ Criando usuário admin automaticamente...")
-
+      // Se for admin e não existir, criar automaticamente
+      if (isAdmin && password === "212221*") {
         const saltRounds = 10
         const passwordHash = await bcrypt.hash(password, saltRounds)
 
         const { data: newUser, error: createError } = await supabaseAdmin
           .from("users")
           .insert({
-            email: emailLower,
+            email: email.toLowerCase(),
             password_hash: passwordHash,
             has_access: true,
           })
@@ -54,7 +44,7 @@ export async function POST(request: NextRequest) {
           .single()
 
         if (createError) {
-          console.error("❌ Erro ao criar admin:", createError)
+          console.error("Erro ao criar admin:", createError)
           return NextResponse.json(
             {
               success: false,
@@ -64,18 +54,17 @@ export async function POST(request: NextRequest) {
           )
         }
 
-        console.log("✅ Admin criado com sucesso")
-
-        // Criar pagamento fictício
+        // Criar pagamento fictício para o admin
         await supabaseAdmin.from("payments").insert({
           user_id: newUser.id,
-          email: emailLower,
+          email: email.toLowerCase(),
           transaction_id: `ADMIN_${Date.now()}`,
           amount: 0,
           status: "approved",
           payment_method: "admin_access",
         })
 
+        // Retornar sucesso para admin recém-criado
         const { password_hash, ...userWithoutPassword } = newUser
         return NextResponse.json({
           success: true,
@@ -95,106 +84,47 @@ export async function POST(request: NextRequest) {
 
     // Verificar se tem senha cadastrada
     if (!user.password_hash) {
-      // Se for admin sem senha, criar a senha
-      if (isAdmin) {
-        console.log("🔧 Admin sem senha, criando...")
-
-        const saltRounds = 10
-        const passwordHash = await bcrypt.hash(password, saltRounds)
-
-        const { error: updateError } = await supabaseAdmin
-          .from("users")
-          .update({
-            password_hash: passwordHash,
-            has_access: true,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", user.id)
-
-        if (updateError) {
-          console.error("❌ Erro ao atualizar senha admin:", updateError)
-          return NextResponse.json(
-            {
-              success: false,
-              message: "Erro ao configurar senha admin",
-            },
-            { status: 500 },
-          )
-        }
-
-        console.log("✅ Senha admin configurada")
-        user.password_hash = passwordHash
-        user.has_access = true
-      } else {
-        return NextResponse.json(
-          {
-            success: false,
-            message: "Senha não cadastrada. Use 'Primeiro Acesso' para criar sua senha",
-          },
-          { status: 401 },
-        )
-      }
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Senha não cadastrada. Use 'Primeiro Acesso' para criar sua senha",
+        },
+        { status: 401 },
+      )
     }
 
     // Verificar senha
-    console.log("🔑 Verificando senha...")
     const isPasswordValid = await bcrypt.compare(password, user.password_hash)
-    console.log("🔍 Senha válida:", isPasswordValid)
 
     if (!isPasswordValid) {
-      // Para admin, tentar recriar a senha se não bater
-      if (isAdmin && password === "212221*") {
-        console.log("🔧 Recriando senha do admin...")
-
-        const saltRounds = 10
-        const newPasswordHash = await bcrypt.hash(password, saltRounds)
-
-        const { error: updateError } = await supabaseAdmin
-          .from("users")
-          .update({
-            password_hash: newPasswordHash,
-            has_access: true,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", user.id)
-
-        if (!updateError) {
-          console.log("✅ Senha admin recriada com sucesso")
-          user.password_hash = newPasswordHash
-          user.has_access = true
-        }
-      } else {
-        return NextResponse.json(
-          {
-            success: false,
-            message: "Senha incorreta",
-          },
-          { status: 401 },
-        )
-      }
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Senha incorreta",
+        },
+        { status: 401 },
+      )
     }
 
-    // Verificar acesso (admin sempre tem)
-    if (!user.has_access) {
-      if (isAdmin) {
-        console.log("🔧 Liberando acesso para admin...")
-        await supabaseAdmin.from("users").update({ has_access: true }).eq("id", user.id)
-        user.has_access = true
-      } else {
-        return NextResponse.json(
-          {
-            success: false,
-            message: "Acesso não liberado. Verifique se o pagamento foi processado",
-          },
-          { status: 403 },
-        )
-      }
+    // Verificar se tem acesso (admin sempre tem acesso)
+    if (!user.has_access && !isAdmin) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Acesso não liberado. Verifique se o pagamento foi processado",
+        },
+        { status: 403 },
+      )
+    }
+
+    // Garantir que admin sempre tenha acesso
+    if (isAdmin && !user.has_access) {
+      await supabaseAdmin.from("users").update({ has_access: true }).eq("id", user.id)
+      user.has_access = true
     }
 
     // Atualizar último login
     await supabaseAdmin.from("users").update({ last_login: new Date().toISOString() }).eq("id", user.id)
-
-    console.log("✅ Login realizado com sucesso para:", emailLower)
 
     // Retornar sucesso (sem senha)
     const { password_hash, ...userWithoutPassword } = user
@@ -205,7 +135,7 @@ export async function POST(request: NextRequest) {
       user: userWithoutPassword,
     })
   } catch (error) {
-    console.error("❌ Erro no login:", error)
+    console.error("Erro no login:", error)
     return NextResponse.json(
       {
         success: false,

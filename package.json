@@ -3,16 +3,13 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "admin:fix": "node scripts/fix-admin-login.js",
+    "admin:hash": "node -e \"const bcrypt = require('bcryptjs'); bcrypt.hash('212221*', 10).then(hash => console.log('Hash:', hash));\"",
     "admin:setup": "node scripts/setup-admin.js",
     "build": "next build",
-    "deploy:setup": "node scripts/deploy-setup.js",
-    "deploy:verify": "node scripts/verify-deployment.js",
+    "db:setup": "node scripts/setup-database.js",
     "dev": "next dev",
     "lint": "next lint",
-    "start": "next start",
-    "supabase:verify": "node scripts/verify-supabase.js",
-    "test:supabase": "node scripts/test-supabase-simple.js"
+    "start": "next start"
   },
   "dependencies": {
     "@radix-ui/react-tabs": "latest",
@@ -20,14 +17,10 @@
     "bcryptjs": "latest",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "fs": "latest",
-    "https": "latest",
     "lucide-react": "^0.454.0",
     "next": "14.2.16",
-    "path": "latest",
     "react": "^18",
     "react-dom": "^18",
-    "readline": "latest",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7"
   },
@@ -42,8 +35,5 @@
     "postcss": "^8.5",
     "tailwindcss": "^3.3.6",
     "typescript": "^5"
-  },
-  "engines": {
-    "node": ">=18.0.0"
   }
 }
